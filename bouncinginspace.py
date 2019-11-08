@@ -23,7 +23,8 @@ marble_img:Surface = pygame.image.load('resources/marble.png')
 BALL = 0
 PLANET = 1
 
-num_planets = 10
+num_planets = 80
+
 
 
 def create_planet(space: pymunk.Space, radius_in, mass_in, position):
@@ -31,12 +32,21 @@ def create_planet(space: pymunk.Space, radius_in, mass_in, position):
     planet_shape = pymunk.Circle(planet_body, radius_in)
     planet_body.position = position
     planet_shape.friction = 0.5
-    planet_shape.elasticity = 0.7
+    planet_shape.elasticity = .85
     planet_shape.collision_type = PLANET
 
-    planet_shape.color = (0, random.randint(50, 255), 0, 255)
+    planet_shape.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255), 255)
     return planet_body, planet_shape
 
+
+# Function to be called to do gravitational interaction
+def run_gravity(body_1: pymunk.Body, body_2: pymunk.Body, g):
+    distance = math.sqrt((body_1.position[0] - body_2.position[0]) ** 2 + (body_1.position[1] - body_2.position[0]) ** 2)
+    force = body_1.mass * body_2.mass / (distance ** 2) * g
+    impulse = Vec2d(force, 0)
+    impulse = impulse.rotated((body_1.position - body_2.position).angle)
+    body_1.apply_impulse_at_world_point(impulse.rotated(math.pi), body_2.position)
+    body_2.apply_impulse_at_world_point(impulse, body_2.position)
 
 
 # Game start
@@ -46,7 +56,6 @@ def main():
     screen: Surface = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     running = True
-    font = pygame.font.SysFont("Arial", 16)
 
     space = pymunk.Space()
     space.gravity = (0, 0)
@@ -72,11 +81,15 @@ def main():
     # Planets
     planets = []
     for i in range(num_planets):
-        size = random.randint(10, 15)
+        size = random.randint(5, 25)
         planet_body, planet_shape = create_planet(space, size, size**2, (random.randint(15, screen.get_width() - 15), random.randint(15, screen.get_height() - 15)))
         space.add(planet_shape)
         space.add(planet_body)
         planets.append(planet_body)
+
+    # Set gravitational constant for planets
+    grav_const = 200 / num_planets
+    gravity_enabled = True
 
     # Walls
     walls = [pymunk.Segment(space.static_body, (0, 0),                                    (0, screen.get_width()), 2),
@@ -105,6 +118,7 @@ def main():
                     event.type == KEYDOWN and (event.key in [K_ESCAPE, K_q]):
                 running = False
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                print(pygame.mouse.get_pos())
                 if not music_started:
                     # Background Music
                     pygame.mixer.music.load('resources/moon.ogg')
@@ -118,15 +132,24 @@ def main():
                 impulse.rotate(mouse_angle)
                 ball_body.apply_impulse_at_world_point(impulse, ball_body.position)
 
-        for i, planet_1 in enumerate(planets):
-            for planet_2 in planets[i+1:]:
-                g = 200 / num_planets
-                distance = math.sqrt((planet_1.position[0] - planet_2.position[0]) ** 2 + (planet_1.position[1] - planet_2.position[1]) ** 2)
-                force = planet_1.mass * planet_2.mass / (distance ** 2 + 10) * g
-                impulse = Vec2d(force, 0)
-                impulse = impulse.rotated((planet_1.position-planet_2.position).angle)
-                planet_1.apply_impulse_at_world_point(impulse.rotated(math.pi), planet_1.position)
-                planet_2.apply_impulse_at_world_point(impulse, planet_2.position)
+            if event.type == KEYDOWN:
+                # If up or down is pressed, change the gravitational constant by a factor of 10
+                if event.key == K_UP:
+                    grav_const *= 1.5
+                    print("Gravity:", grav_const)
+                if event.key == K_DOWN:
+                    print("Gravity:", grav_const)
+                    grav_const /= 1.5
+
+                # Enable / Disable gravity with space
+                if event.key == K_SPACE:
+                    gravity_enabled = not gravity_enabled
+
+        if gravity_enabled:
+            for i, planet_1 in enumerate(planets):
+                run_gravity(planet_1, ball_body, grav_const)
+                for planet_2 in planets[i+1:]:
+                    run_gravity(planet_1, planet_2, grav_const)
 
         # Graphics ---------------------------------------------------------------------------
 
@@ -137,8 +160,17 @@ def main():
         space.debug_draw(draw_options)
 
         # Draw the rest of the stuff
-        screen.blit(pygame.transform.rotate(marble_img, ball_body.rotation_vector.angle_degrees), (ball_body.position[0] - ball_shape.radius, screen.get_height() - ball_body.position[1] - ball_shape.radius))
+        # screen.blit(pygame.transform.rotate(marble_img, ball_body.rotation_vector.angle_degrees), (ball_body.position[0] - ball_shape.radius, screen.get_height() - ball_body.position[1] - ball_shape.radius))
+        font = pygame.font.SysFont("Arial", 13)
+        # pygame.draw.rect(screen, color.THECOLORS['gray'], Rect(0, 0, 260, 60), 0)
+        screen.blit(font.render("Click anywhere to fire the red ball towards the mouse", 1, color.THECOLORS["white"]), (5, 5))
+        screen.blit(font.render("Press up or down to change the strength of gravity, space to enable/disable", 1, color.THECOLORS["white"]), (5, 20))
+        screen.blit(font.render("Gravitational Strength:", 1, color.THECOLORS["white"]), (5, 40))
+        screen.blit(font.render(str(round(grav_const, 3)), 1, color.THECOLORS["yellow"]), (115, 40))
 
+        gravity_color, gravity_text = (color.THECOLORS['green'], 'Enabled') if gravity_enabled else (color.THECOLORS['red'], 'Disabled')
+        screen.blit(font.render("Gravity:", 1, color.THECOLORS["white"]), (5, 55))
+        screen.blit(font.render(gravity_text, 1, gravity_color), (45, 55))
 
         # Update the screen
         pygame.display.flip()
