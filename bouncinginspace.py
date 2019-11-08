@@ -1,4 +1,4 @@
-# Game for moving around a 2d area with recoil
+# Space simulator with gravity and collisions
 # Caleb Hostetler 11/6/2019
 # Some code snippets taken from pymunk example program "pymunkarrows.py"
 import sys
