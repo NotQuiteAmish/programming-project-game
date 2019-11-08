@@ -1,6 +1,6 @@
 # Game for moving around a 2d area with recoil
 # Caleb Hostetler 11/6/2019
-# Some code taken from pymunk example programs
+# Some code snippets taken from pymunk example program "pymunkarrows.py"
 import sys
 
 import pygame
@@ -14,17 +14,17 @@ import pymunk
 from pymunk.vec2d import Vec2d
 from pymunk import pygame_util
 
-
-
 width, height = 700, 700
 marble_img:Surface = pygame.image.load('resources/marble.png')
 
 # Collision types
 BALL = 0
 PLANET = 1
+click_sound = None
 
-num_planets = 80
-
+# How many planets to create - for higher planet quantities the gravitational
+# constant will be set to a lower default value
+num_planets = 30
 
 
 def create_planet(space: pymunk.Space, radius_in, mass_in, position):
@@ -35,7 +35,7 @@ def create_planet(space: pymunk.Space, radius_in, mass_in, position):
     planet_shape.elasticity = .85
     planet_shape.collision_type = PLANET
 
-    planet_shape.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255), 255)
+    planet_shape.color = (0, random.randint(50, 255), 0, 255)
     return planet_body, planet_shape
 
 
@@ -48,6 +48,11 @@ def run_gravity(body_1: pymunk.Body, body_2: pymunk.Body, g):
     body_1.apply_impulse_at_world_point(impulse.rotated(math.pi), body_2.position)
     body_2.apply_impulse_at_world_point(impulse, body_2.position)
 
+
+# Collision handler setup
+def planet_collision(arbiter, space, data):
+    pass
+    # click_sound.play()
 
 # Game start
 def main():
@@ -63,7 +68,8 @@ def main():
     # Allow pymunk to draw to pygame screen
     draw_options = pygame_util.DrawOptions(screen)
 
-    clicks = 1
+    global click_sound
+    click_sound = pygame.mixer.Sound('resources/click.ogg')
 
     # Initialize physical objects ---------------------------------------------------------------------------
     # Ball
@@ -91,6 +97,9 @@ def main():
     grav_const = 200 / num_planets
     gravity_enabled = True
 
+    handler = space.add_collision_handler(PLANET, PLANET)
+    handler.post_solve = planet_collision
+
     # Walls
     walls = [pymunk.Segment(space.static_body, (0, 0),                                    (0, screen.get_width()), 2),
              pymunk.Segment(space.static_body, (0, screen.get_width()),                   (screen.get_height(), screen.get_width()), 2),
@@ -103,9 +112,7 @@ def main():
     space.add(walls)
 
 
-    # Collision handler setup
-    def ball_planet_collision(space, ball, planet, position, data):
-        pass
+
 
 
     music_started = False
