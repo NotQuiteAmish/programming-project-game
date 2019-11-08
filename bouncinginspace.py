@@ -27,7 +27,10 @@ click_sound = None
 num_planets = 30
 
 
+# Function for creating a "planet" it takes several arguments, and colors it a random shade of green
 def create_planet(space: pymunk.Space, radius_in, mass_in, position):
+    """Function for creating a "planet". it takes several arguments, and colors it a random shade of green.
+    Returns a body and a shape for the planet"""
     planet_body = pymunk.Body(mass_in, moment=pymunk.moment_for_circle(mass_in, 0, radius_in))
     planet_shape = pymunk.Circle(planet_body, radius_in)
     planet_body.position = position
@@ -39,8 +42,9 @@ def create_planet(space: pymunk.Space, radius_in, mass_in, position):
     return planet_body, planet_shape
 
 
-# Function to be called to do gravitational interaction
 def run_gravity(body_1: pymunk.Body, body_2: pymunk.Body, g):
+    """Function that can be called to apply gravitational impulses between two bodies.
+    g is the gravitational constant"""
     distance = math.sqrt((body_1.position[0] - body_2.position[0]) ** 2 + (body_1.position[1] - body_2.position[0]) ** 2)
     force = body_1.mass * body_2.mass / (distance ** 2) * g
     impulse = Vec2d(force, 0)
@@ -51,8 +55,11 @@ def run_gravity(body_1: pymunk.Body, body_2: pymunk.Body, g):
 
 # Collision handler setup
 def planet_collision(arbiter, space, data):
+    """Function to be called upon a collision between two planets. Should play a sound"""
+    # TODO: Allow more sounds to play
     pass
-    # click_sound.play()
+    click_sound.play()
+
 
 # Game start
 def main():
@@ -63,15 +70,19 @@ def main():
     running = True
 
     space = pymunk.Space()
+
+    # This gravity would be if we wanted to have every object move in one direction, not towards each other
     space.gravity = (0, 0)
 
     # Allow pymunk to draw to pygame screen
     draw_options = pygame_util.DrawOptions(screen)
 
+    # Sound to play when planets collide
     global click_sound
     click_sound = pygame.mixer.Sound('resources/click.ogg')
 
     # Initialize physical objects ---------------------------------------------------------------------------
+
     # Ball
     ball_body = pymunk.Body(mass=1000, moment=pymunk.moment_for_circle(1000, 0, marble_img.get_width()/2))
     ball_shape = pymunk.Circle(ball_body, marble_img.get_width()/2)
@@ -93,10 +104,11 @@ def main():
         space.add(planet_body)
         planets.append(planet_body)
 
-    # Set gravitational constant for planets
+    # Set gravitational constant for planets - more planets means lower starting constant
     grav_const = 200 / num_planets
     gravity_enabled = True
 
+    # Set up collision sounds between planets (see planet_collision)
     handler = space.add_collision_handler(PLANET, PLANET)
     handler.post_solve = planet_collision
 

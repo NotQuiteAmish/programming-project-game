@@ -19,3 +19,6 @@ arrow keys, or turned off entirely using the space bar.
 Overall, I am very satisfied with how this turned out! I spent about 2 hours interacting with the example program to
 familiarize myself with the library, and about 5 hours coding the program itself, as well as an hour or so on other aspects
 of the program, such as setting up git to interact with GitHub, or downloading and creating assets for the program.
+
+(Note - you may need to do "pip install pymunk" to get this to work. I haven't looked at all at how libraries work on
+other peoples' machines)
