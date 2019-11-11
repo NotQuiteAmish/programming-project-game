@@ -24,7 +24,7 @@ click_sound = None
 
 # How many planets to create - for higher planet quantities the gravitational
 # constant will be set to a lower default value
-num_planets = 20
+num_planets = 30
 
 
 # Function for creating a "planet" it takes several arguments, and colors it a random shade of green
@@ -110,7 +110,7 @@ def main():
 
     # Set gravitational constant for planets - more planets means lower starting constant
     grav_const = 200 / num_planets
-    gravity_enabled = True
+    gravity_enabled = False
 
     # Set up collision sounds between planets (see planet_collision)
     # handler = space.add_collision_handler(PLANET, PLANET)
@@ -127,7 +127,10 @@ def main():
         wall.elasticity = 0.999
     space.add(walls)
 
-    music_started = False
+    music_started = True
+    pygame.mixer.music.load('resources/moon.ogg')
+    pygame.mixer.music.play(-1, 0.0)
+
     ball_body.position = (300, 400)
     # Main game loop ----------------------------------------------------------------------------------------
     while running:
