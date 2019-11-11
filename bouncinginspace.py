@@ -24,7 +24,7 @@ click_sound = None
 
 # How many planets to create - for higher planet quantities the gravitational
 # constant will be set to a lower default value
-num_planets = 30
+num_planets = 20
 
 
 # Function for creating a "planet" it takes several arguments, and colors it a random shade of green
@@ -35,7 +35,7 @@ def create_planet(space: pymunk.Space, radius_in, mass_in, position):
     planet_shape = pymunk.Circle(planet_body, radius_in)
     planet_body.position = position
     planet_shape.friction = 0.5
-    planet_shape.elasticity = .85
+    planet_shape.elasticity = .7
     planet_shape.collision_type = PLANET
 
     planet_shape.color = (0, random.randint(50, 255), 0, 255)
@@ -45,12 +45,13 @@ def create_planet(space: pymunk.Space, radius_in, mass_in, position):
 def run_gravity(body_1: pymunk.Body, body_2: pymunk.Body, g):
     """Function that can be called to apply gravitational impulses between two bodies.
     g is the gravitational constant"""
-    distance = math.sqrt((body_1.position[0] - body_2.position[0]) ** 2 + (body_1.position[1] - body_2.position[0]) ** 2)
+    distance = 2 * math.sqrt((body_1.position[0] - body_2.position[0]) ** 2 + (body_1.position[1] - body_2.position[0]) ** 2)
     force = body_1.mass * body_2.mass / (distance ** 2) * g
     impulse = Vec2d(force, 0)
     impulse = impulse.rotated((body_1.position - body_2.position).angle)
-    body_1.apply_impulse_at_world_point(impulse.rotated(math.pi), body_2.position)
-    body_2.apply_impulse_at_world_point(impulse, body_2.position)
+    if distance >= 5:
+        body_1.apply_impulse_at_world_point(impulse.rotated(math.pi), body_2.position)
+        body_2.apply_impulse_at_world_point(impulse, body_2.position)
 
 
 # Collision handler setup
@@ -58,7 +59,10 @@ def planet_collision(arbiter, space, data):
     """Function to be called upon a collision between two planets. Should play a sound"""
     # TODO: Allow more sounds to play
     pass
-    click_sound.play()
+    # pygame.mixer.Channel(0).stop()
+    # pygame.mixer.Channel(0).play(click_sound)
+
+
 
 
 # Game start
@@ -98,8 +102,8 @@ def main():
     # Planets
     planets = []
     for i in range(num_planets):
-        size = random.randint(5, 25)
-        planet_body, planet_shape = create_planet(space, size, size**2, (random.randint(15, screen.get_width() - 15), random.randint(15, screen.get_height() - 15)))
+        size = random.randint(10, 15)
+        planet_body, planet_shape = create_planet(space, size, math.pi * size ** 2, (random.randint(15, screen.get_width() - 15), random.randint(15, screen.get_height() - 15)))
         space.add(planet_shape)
         space.add(planet_body)
         planets.append(planet_body)
@@ -109,8 +113,8 @@ def main():
     gravity_enabled = True
 
     # Set up collision sounds between planets (see planet_collision)
-    handler = space.add_collision_handler(PLANET, PLANET)
-    handler.post_solve = planet_collision
+    # handler = space.add_collision_handler(PLANET, PLANET)
+    # handler.post_solve = planet_collision
 
     # Walls
     walls = [pymunk.Segment(space.static_body, (0, 0),                                    (0, screen.get_width()), 2),
@@ -122,10 +126,6 @@ def main():
         wall.friction = 0.1
         wall.elasticity = 0.999
     space.add(walls)
-
-
-
-
 
     music_started = False
     ball_body.position = (300, 400)
@@ -143,8 +143,6 @@ def main():
                     pygame.mixer.music.load('resources/moon.ogg')
                     pygame.mixer.music.play(-1, 0.0)
                     music_started = True
-                clicks += 1
-                print("Click!", clicks)
                 mouse_position = pymunk.pygame_util.from_pygame(Vec2d(pygame.mouse.get_pos()), screen)
                 mouse_angle = (mouse_position - ball_body.position).angle
                 impulse = ball_body.mass * 1000 * Vec2d(1, 0)
@@ -166,7 +164,7 @@ def main():
 
         if gravity_enabled:
             for i, planet_1 in enumerate(planets):
-                run_gravity(planet_1, ball_body, grav_const)
+                # run_gravity(planet_1, ball_body, grav_const)
                 for planet_2 in planets[i+1:]:
                     run_gravity(planet_1, planet_2, grav_const)
 
