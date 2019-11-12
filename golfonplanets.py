@@ -16,7 +16,7 @@ from pymunk.vec2d import Vec2d
 from pymunk import pygame_util
 
 '''
-This program uses three sets of coordinates:
+This program uses two sets of coordinates:
     - Pygame coordinates - Set of coordinates related to the window of the game. Origin is ALWAYS at the top left of the
                            window. Y axis increases as you move DOWN.
     - World/pymunk coordinates -  Coordinate system in which Y value increases as you move UP. Similar to a normal 
