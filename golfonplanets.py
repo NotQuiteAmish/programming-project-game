@@ -150,6 +150,9 @@ class Planet:
 
 
 class Star:
+    """Class about the stars (dots in the background). Stars operate in a way such that whenever one goes out of the
+    active area, a new one will be spawned off screen. The total number of stars stays constant.
+    """
     _stars = []
     DOT = 0
     CROSS = 1
@@ -165,16 +168,18 @@ class Star:
         self.type = type
         self.color = color
         self.update_pg_coords()
+        # Whenever the star is created, add itself to the list of stars
         Star._stars.append(self)
 
+    # Essentially, this says that two stars will be considered the same if they have the same location
     def __eq__(self, other):
         return self.location == other.location
 
-
     def draw(self):
-        self.pg_location = pygame_coordinates(*self.location)
+        self.update_pg_coords()
         pygame.draw.circle(DISPLAYSURF, self.color, self.pg_location, self.size)
 
+    # The pg_XXXX
     def update_pg_coords(self):
         self.pg_location = pygame_coordinates(*self.location)
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
@@ -183,10 +188,9 @@ class Star:
                 Star(size=self.size, type=self.type, color=self.color)
                 Star._stars.remove(self)
                 print(len(Star._stars))
-                del(self)
 
 
-
+# The Game itself #################################################################################################
 def main():
     global DISPLAYSURF, FPSCLOCK, camera_x, camera_y
 
@@ -203,7 +207,6 @@ def main():
 
     while True:
 
-
         # Deal with events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -212,18 +215,17 @@ def main():
         # React to held keys
         keys = pygame.key.get_pressed()
         if keys[K_DOWN]:
-            camera_y -= 3
+            camera_y -= 7
         if keys[K_UP]:
-            camera_y += 3
+            camera_y += 7
         if keys[K_LEFT]:
-            camera_x -= 3
+            camera_x -= 7
         if keys[K_RIGHT]:
-            camera_x += 3
+            camera_x += 7
 
         # Check for stars going outside
         for star in Star._stars:
             star.update_pg_coords()
-
 
         # Draw stuff
         DISPLAYSURF.fill(color.Color(7, 0, 15, 255))
