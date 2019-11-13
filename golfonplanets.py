@@ -175,10 +175,9 @@ class Star:
         self.pg_location = pygame_coordinates(*self.location)
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
         if not is_in_active_zone(self):
-            Star._stars.append(Star(size=self.size, type=self.type, color=self.color))
-            Star._stars.remove(self)
-            del(self)
-
+            if self in Star._stars:
+                Star._stars.append(Star(size=self.size, type=self.type, color=self.color))
+                Star._stars.remove(self)
 
 
 def main():
