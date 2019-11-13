@@ -64,8 +64,6 @@ def planet_collision(arbiter, space, data):
     # pygame.mixer.Channel(0).play(click_sound)
 
 
-
-
 # Game start
 def main():
     # Start up the game

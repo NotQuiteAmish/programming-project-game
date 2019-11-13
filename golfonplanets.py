@@ -194,9 +194,26 @@ class Star:
 def main():
     global DISPLAYSURF, FPSCLOCK, camera_x, camera_y
 
+    # Start up pygame settings
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+
+    # Set up pymunk physics
+    space = pymunk.Space()
+    draw_options = pygame_util.DrawOptions(DISPLAYSURF)
+
+    # Create player body
+    player_body = pymunk.Body(mass=100, moment=pymunk.moment_for_circle(100, 0, 10))
+    player_shape = pymunk.Circle(player_body, 10)
+    player_shape.friction = 0.5
+    player_shape.elasticity = 0.9
+    player_shape.color = color.THECOLORS['coral']
+
+    # Add bodies to space
+    space.add(player_shape)
+    space.add(player_body)
+    player_body.position = (100, 100)
 
     planets = []
     for i in range(100):
@@ -231,6 +248,8 @@ def main():
         DISPLAYSURF.fill(color.Color(7, 0, 15, 255))
         draw_objects(Star._stars)
         # draw_objects(planets)
+        space.debug_draw(draw_options)
+        DISPLAYSURF.blit
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
