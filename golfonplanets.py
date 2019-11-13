@@ -96,12 +96,12 @@ def is_in_camera_zone(object=None, coords=None):
         object_rect = pygame.rect.Rect(object.pg_left, object.pg_top, object.width, object.height)
         return camera_rect.colliderect(object_rect)
     if coords is not None:
-        return camera_rect.collidepoint(*coords)
+        return camera_rect.collidepoint(pygame_coordinates(*coords))
     return None
 
 
 def random_position_in_active_zone():
-    """Returns a random (x, y) position within the active zone"""
+    """Returns a random (x, y) world position within the active zone"""
     x_pos = random.randint(camera_x - ACTIVE_ZONE_WIDTH, camera_x + WIN_WIDTH + ACTIVE_ZONE_WIDTH)
     y_pos = random.randint(camera_y - WIN_HEIGHT - ACTIVE_ZONE_WIDTH, camera_y + ACTIVE_ZONE_WIDTH)
     return x_pos, y_pos
@@ -150,6 +150,7 @@ class Planet:
 
 
 class Star:
+    _stars = []
     DOT = 0
     CROSS = 1
 
@@ -159,16 +160,24 @@ class Star:
             self.location = random_position_out_of_view()
 
         self.x_pos, self.y_pos = self.location
-        self.pg_location = pygame_coordinates(*self.location)
         self.size = size
         self.width, self.height = (self.size * 2, self.size * 2)
-        self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
         self.type = type
         self.color = color
+        self.update_pg_coords()
+        Star._stars.append(self)
 
     def draw(self):
         self.pg_location = pygame_coordinates(*self.location)
         pygame.draw.circle(DISPLAYSURF, self.color, self.pg_location, self.size)
+
+    def update_pg_coords(self):
+        self.pg_location = pygame_coordinates(*self.location)
+        self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
+        if not is_in_active_zone(self):
+            Star._stars.append(Star(size=self.size, type=self.type, color=self.color))
+            Star._stars.remove(self)
+            del(self)
 
 
 
@@ -183,9 +192,8 @@ def main():
     for i in range(100):
         planets.append(Planet(radius=400 - 4 * i))
 
-    stars = []
     for i in range(400):
-        stars.append(Star(color=random.choice(list(color.THECOLORS.values()))))
+        Star(color=random.choice(list(color.THECOLORS.values())))
 
     while True:
 
@@ -206,20 +214,14 @@ def main():
         if keys[K_RIGHT]:
             camera_x += 3
 
-        #
-
-
         # Check for stars going outside
-        for star in stars:
-            print(star.x_pos)
-            if not is_in_active_zone(star):
-                print('outside!')
-                del(star)
-                stars.append(Star())
+        for star in Star._stars:
+            star.update_pg_coords()
+
 
         # Draw stuff
         DISPLAYSURF.fill(color.Color(7, 0, 15, 255))
-        draw_objects(stars)
+        draw_objects(Star._stars)
         # draw_objects(planets)
 
         pygame.display.update()
