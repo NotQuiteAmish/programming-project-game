@@ -118,6 +118,12 @@ def random_position_out_of_view():
     return x_pos, y_pos
 
 
+def screen_center():
+    x_pos = camera_x + WIN_WIDTH/2
+    y_pos = camera_y - WIN_HEIGHT/2
+    return x_pos, y_pos
+
+
 class Planet:
     """
     Class that holds the information about a given planet.
@@ -210,10 +216,18 @@ def main():
     player_shape.elasticity = 0.9
     player_shape.color = color.THECOLORS['coral']
 
+    # Create camera center body
+    camera_body = pymunk.Body(mass=.0001, moment=pymunk.moment_for_circle(1, 0, 3))
+    camera_shape = pymunk.Circle(camera_body, 3)
+    camera_shape.color = color.THECOLORS['orange']
+
     # Add bodies to space
     space.add(player_shape)
     space.add(player_body)
+    space.add(camera_shape)
+    space.add(camera_body)
     player_body.position = (100, 100)
+    camera_body.position = screen_center()
 
     planets = []
     for i in range(100):
@@ -249,7 +263,10 @@ def main():
         draw_objects(Star._stars)
         # draw_objects(planets)
         space.debug_draw(draw_options)
-        DISPLAYSURF.blit
+
+        # Physics tick
+        dt = 1. / FPS
+        space.step(dt)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
