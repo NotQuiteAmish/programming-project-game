@@ -167,6 +167,10 @@ class Star:
         self.update_pg_coords()
         Star._stars.append(self)
 
+    def __eq__(self, other):
+        return self.location == other.location
+
+
     def draw(self):
         self.pg_location = pygame_coordinates(*self.location)
         pygame.draw.circle(DISPLAYSURF, self.color, self.pg_location, self.size)
@@ -176,8 +180,11 @@ class Star:
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
         if not is_in_active_zone(self):
             if self in Star._stars:
-                Star._stars.append(Star(size=self.size, type=self.type, color=self.color))
+                Star(size=self.size, type=self.type, color=self.color)
                 Star._stars.remove(self)
+                print(len(Star._stars))
+                del(self)
+
 
 
 def main():
