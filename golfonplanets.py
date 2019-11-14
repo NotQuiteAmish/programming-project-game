@@ -62,9 +62,9 @@ def world_coordinates(pygame_x, pygame_y):
 
 
 def pygame_coordinates(world_x, world_y):
-    """Converts world coordinates and returns pygame coordinates"""
-    pygame_x = world_x - camera_x
-    pygame_y = camera_y - world_y
+    """Converts world coordinates and returns pygame coordinates. Pygame coordinates must be integers"""
+    pygame_x = int(world_x - camera_x)
+    pygame_y = int(camera_y - world_y)
     return pygame_x, pygame_y
 
 
@@ -73,6 +73,13 @@ def draw_objects(objects):
        Objects in "objects" have world coordinates that will be converted to pygame coordinates before drawing"""
     for sprite in objects:
         sprite.draw()
+
+
+def draw_circle_shapes(shapes: [pymunk.Shape]):
+    """Draws circular pymunk bodies so they appear in the correct location"""
+    for shape in shapes:
+        shape.pg_center = pygame_coordinates(*shape.body.position)
+        pygame.draw.circle(DISPLAYSURF, shape.color, shape.pg_center, int(shape.radius))
 
 
 def terminate():
@@ -124,6 +131,14 @@ def screen_center():
     return x_pos, y_pos
 
 
+def center_camera_on(focus_object: pymunk.Body):
+    global camera_x, camera_y
+    camera_center_x, camera_center_y = focus_object.position
+    camera_x = int(camera_center_x - WIN_WIDTH/2)
+    camera_y = int(camera_center_y + WIN_HEIGHT/2)
+    return camera_x, camera_y
+
+
 class Planet:
     """
     Class that holds the information about a given planet.
@@ -169,7 +184,7 @@ class Star:
             self.location = random_position_out_of_view()
 
         self.x_pos, self.y_pos = self.location
-        self.size = size
+        self.size = int(size)
         self.width, self.height = (self.size * 2, self.size * 2)
         self.type = type
         self.color = color
@@ -208,6 +223,7 @@ def main():
     # Set up pymunk physics
     space = pymunk.Space()
     draw_options = pygame_util.DrawOptions(DISPLAYSURF)
+    circle_shapes = []
 
     # Create player body
     player_body = pymunk.Body(mass=100, moment=pymunk.moment_for_circle(100, 0, 10))
@@ -215,19 +231,22 @@ def main():
     player_shape.friction = 0.5
     player_shape.elasticity = 0.9
     player_shape.color = color.THECOLORS['coral']
+    circle_shapes.append(player_shape)
 
     # Create camera center body
-    camera_body = pymunk.Body(mass=.0001, moment=pymunk.moment_for_circle(1, 0, 3))
-    camera_shape = pymunk.Circle(camera_body, 3)
-    camera_shape.color = color.THECOLORS['orange']
+    camera_body = pymunk.Body(mass=.00000001, moment=pymunk.moment_for_circle(1, 0, 3))
 
     # Add bodies to space
     space.add(player_shape)
     space.add(player_body)
-    space.add(camera_shape)
     space.add(camera_body)
-    player_body.position = (100, 100)
-    camera_body.position = screen_center()
+    player_body.position = (0, 0)
+    camera_body.position = (1, 1)
+
+    # Create spring for camera movements
+    camera_spring = pymunk.constraint.DampedSpring(player_body, camera_body, player_body.position, camera_body.position,
+                                                   0, 500000, .1)
+    space.add(camera_spring)
 
     planets = []
     for i in range(100):
@@ -246,13 +265,16 @@ def main():
         # React to held keys
         keys = pygame.key.get_pressed()
         if keys[K_DOWN]:
-            camera_y -= 7
+            player_body.apply_impulse_at_local_point(20000 * Vec2d(0, -1))
         if keys[K_UP]:
-            camera_y += 7
+            player_body.apply_impulse_at_local_point(20000 * Vec2d(0, 1))
         if keys[K_LEFT]:
-            camera_x -= 7
+            player_body.apply_impulse_at_local_point(20000 * Vec2d(-1, 0))
         if keys[K_RIGHT]:
-            camera_x += 7
+            player_body.apply_impulse_at_local_point(20000 * Vec2d(1, 0))
+
+        # Center camera on the camera body
+        center_camera_on(camera_body)
 
         # Check for stars going outside
         for star in Star._stars:
@@ -263,6 +285,7 @@ def main():
         draw_objects(Star._stars)
         # draw_objects(planets)
         space.debug_draw(draw_options)
+        draw_circle_shapes(circle_shapes)
 
         # Physics tick
         dt = 1. / FPS
