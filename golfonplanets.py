@@ -208,7 +208,6 @@ class Star:
             if self in Star._stars:
                 Star(size=self.size, type=self.type, color=self.color)
                 Star._stars.remove(self)
-                print(len(Star._stars))
 
 
 # The Game itself #################################################################################################
@@ -241,12 +240,12 @@ def main():
     space.add(player_body)
     space.add(camera_body)
     player_body.position = (0, 0)
-    camera_body.position = (1, 1)
+    camera_body.position = (0, 0)
 
     # Create spring for camera movements
-    camera_spring = pymunk.constraint.DampedSpring(player_body, camera_body, player_body.position, camera_body.position,
-                                                   0, 500000, .1)
-    space.add(camera_spring)
+    # camera_spring = pymunk.constraint.DampedSpring(player_body, camera_body, player_body.position, camera_body.position,
+    #                                               0, 500000, .1)
+    # space.add(camera_spring)
 
     planets = []
     for i in range(100):
@@ -265,15 +264,16 @@ def main():
         # React to held keys
         keys = pygame.key.get_pressed()
         if keys[K_DOWN]:
-            player_body.apply_impulse_at_local_point(20000 * Vec2d(0, -1))
+            player_body.apply_impulse_at_local_point(200 * Vec2d(0, -1))
         if keys[K_UP]:
-            player_body.apply_impulse_at_local_point(20000 * Vec2d(0, 1))
+            player_body.apply_impulse_at_local_point(200 * Vec2d(0, 1))
         if keys[K_LEFT]:
-            player_body.apply_impulse_at_local_point(20000 * Vec2d(-1, 0))
+            player_body.apply_impulse_at_local_point(200 * Vec2d(-1, 0))
         if keys[K_RIGHT]:
-            player_body.apply_impulse_at_local_point(20000 * Vec2d(1, 0))
+            player_body.apply_impulse_at_local_point(200 * Vec2d(1, 0))
 
-        # Center camera on the camera body
+        # Move the camera body and center the camera on it
+        camera_body.velocity = player_body.velocity * .6 + (player_body.position - camera_body.position) * 3
         center_camera_on(camera_body)
 
         # Check for stars going outside
@@ -284,7 +284,7 @@ def main():
         DISPLAYSURF.fill(color.Color(7, 0, 15, 255))
         draw_objects(Star._stars)
         # draw_objects(planets)
-        space.debug_draw(draw_options)
+        # space.debug_draw(draw_options)
         draw_circle_shapes(circle_shapes)
 
         # Physics tick
