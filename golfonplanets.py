@@ -80,6 +80,8 @@ def draw_circle_shapes(shapes: [pymunk.Shape]):
     for shape in shapes:
         shape.pg_center = pygame_coordinates(*shape.body.position)
         pygame.draw.circle(DISPLAYSURF, shape.color, shape.pg_center, int(shape.radius))
+        pygame.draw.line(DISPLAYSURF, color.THECOLORS['black'],
+                         shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle))
 
 
 def terminate():
@@ -242,10 +244,6 @@ def main():
     player_body.position = (0, 0)
     camera_body.position = (0, 0)
 
-    # Create spring for camera movements
-    # camera_spring = pymunk.constraint.DampedSpring(player_body, camera_body, player_body.position, camera_body.position,
-    #                                               0, 500000, .1)
-    # space.add(camera_spring)
 
     planets = []
     for i in range(100):
@@ -263,14 +261,14 @@ def main():
 
         # React to held keys
         keys = pygame.key.get_pressed()
-        if keys[K_DOWN]:
-            player_body.apply_impulse_at_local_point(200 * Vec2d(0, -1))
         if keys[K_UP]:
-            player_body.apply_impulse_at_local_point(200 * Vec2d(0, 1))
+            player_body.apply_impulse_at_local_point(Vec2d(1000, 0).rotated(-2 * player_body.angle))
         if keys[K_LEFT]:
-            player_body.apply_impulse_at_local_point(200 * Vec2d(-1, 0))
+            player_body.angle = player_body.angle - (math.pi/60)
+            print(player_body.angle)
         if keys[K_RIGHT]:
-            player_body.apply_impulse_at_local_point(200 * Vec2d(1, 0))
+            player_body.angle = player_body.angle + (math.pi/60)
+            print(player_body.angle)
 
         # Move the camera body and center the camera on it
         camera_body.velocity = player_body.velocity * .6 + (player_body.position - camera_body.position) * 3
