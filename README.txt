@@ -27,4 +27,18 @@ other peoples' machines)
 
 - Project 2 - November 14, 2019 -
 
-The new part of my project this week is ""
+The new part of my project this week is "flyinginspace.py". I think my end goal for this project will be some game that
+takes place in space. So, I want to be able to move around freely in the space and have the camera track the player
+wherever they move.
+
+The majority of the work on this program were the following things:
+    - Code to make the camera follow the player
+    - Code to generate stars in the background of space
+    - Making pymunk work well with pygame in complex situations
+    - Further practice with git and GitHub.
+
+In all, I think I spent about 7 hours on this project between my last presentation on Monday, 11/11, and today,
+Thursday, 11/14. All of the code is original except for small bare bones bits I used from bouncinginspace.py. I did a
+*lot* of documentation so hopefully its commented well enough
+
+
