@@ -22,3 +22,9 @@ of the program, such as setting up git to interact with GitHub, or downloading a
 
 (Note - you may need to do "pip install pymunk" to get this to work. I haven't looked at all at how libraries work on
 other peoples' machines)
+
+
+
+- Project 2 - November 14, 2019 -
+
+The new part of my project this week is ""
