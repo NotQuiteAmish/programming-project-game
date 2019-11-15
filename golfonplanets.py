@@ -93,7 +93,7 @@ def pygame_coordinates(world_x, world_y):
 
 
 def draw_objects(objects):
-    """Draws all of the objects in list "objects" onto the screen (DISPLAYSURF)
+    """Draws all of the objects in list "objects" onto the screen (DISPLAY_SURF)
        Objects in "objects" have world coordinates that will be converted to pygame coordinates before drawing"""
     for sprite in objects:
         sprite.draw()
@@ -104,6 +104,8 @@ def draw_circle_shapes(shapes: [pymunk.Shape]):
     for shape in shapes:
         shape.pg_center = pygame_coordinates(*shape.body.position)
         pygame.draw.circle(DISPLAY_SURF, shape.color, shape.pg_center, int(shape.radius))
+        # This line points what direction the shape's body is facing. It's kinda janky, not sure why it works
+        # the way it does.
         pygame.draw.line(DISPLAY_SURF, color.THECOLORS['black'],
                          shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle))
 
@@ -152,12 +154,15 @@ def random_position_out_of_view():
 
 
 def screen_center():
+    """Returns the centermost point of the camera in world coordinates"""
     x_pos = camera_x + WIN_WIDTH/2
     y_pos = camera_y - WIN_HEIGHT/2
     return x_pos, y_pos
 
 
 def center_camera_on(focus_object: pymunk.Body):
+    """Moves the camera so that the focus_object is in the dead center
+    (Based on the Body.position of the object"""
     global camera_x, camera_y
     camera_center_x, camera_center_y = focus_object.position
     camera_x = int(camera_center_x - WIN_WIDTH/2)
@@ -169,6 +174,10 @@ class Planet:
     """
     Class that holds the information about a given planet.
     Location is an (x, y) coordinate of the center in world coordinates
+
+    This class is a work in progress, it doesn't do anything remarkable yet
+
+    pg_XXX variables are the planet's position in pygame coordinates
     """
     def __init__(self, radius=100, mass=1000, location=None, object_color=None):
         self.radius = radius
@@ -199,6 +208,8 @@ class Planet:
 class Star:
     """Class about the stars (dots in the background). Stars operate in a way such that whenever one goes out of the
     active area, a new one will be spawned off screen. The total number of stars stays constant.
+
+    pg_XXX variables are pygame coordinates
     """
     _stars = []
     DOT = 0
@@ -223,11 +234,12 @@ class Star:
         return self.location == other.location
 
     def draw(self):
+        """Draw self on DISPLAY_SURF"""
         self.update_pg_coords()
         pygame.draw.circle(DISPLAY_SURF, self.color, self.pg_location, self.size)
 
-    # The pg_XXXX
     def update_pg_coords(self):
+        """Update pygame coordinates to match the current world coordinates"""
         self.pg_location = pygame_coordinates(*self.location)
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.size), (self.y_pos + self.size))
         if not is_in_active_zone(self):
@@ -238,6 +250,7 @@ class Star:
 
 # The Game itself #################################################################################################
 def main():
+    # Some global variables used by many functions
     global DISPLAY_SURF, FPS_CLOCK, camera_x, camera_y
 
     # Start up pygame settings
@@ -250,7 +263,7 @@ def main():
     draw_options = pygame_util.DrawOptions(DISPLAY_SURF)
     circle_shapes = []
 
-    # Create player body
+    # Create player body (space ship thing)
     player_body = pymunk.Body(mass=100, moment=pymunk.moment_for_circle(100, 0, 10))
     player_shape = pymunk.Circle(player_body, 10)
     player_shape.friction = 0.5
@@ -258,7 +271,8 @@ def main():
     player_shape.color = color.THECOLORS['coral']
     circle_shapes.append(player_shape)
 
-    # Create camera center body
+    # Create camera center body. This invisible body moves around to follow the player, and the camera is constantly
+    # centered on it
     camera_body = pymunk.Body(mass=.00000001, moment=pymunk.moment_for_circle(1, 0, 3))
 
     # Add bodies to space
@@ -268,13 +282,14 @@ def main():
     player_body.position = (0, 0)
     camera_body.position = (0, 0)
 
-
     planets = []
     for i in range(100):
         planets.append(Planet(radius=400 - 4 * i))
 
+    # Generate 1000 stars. These will be automatically added to the Star._stars list, and will replace themselves with
+    # new stars if they exit the active zone
     for i in range(1000):
-        Star(color=random.choice(list(color.THECOLORS.values())))
+        Star(color=random.choice(list(color.THECOLORS.values())), size=0)
 
     while True:
 
@@ -286,8 +301,10 @@ def main():
         # React to held keys
         keys = pygame.key.get_pressed()
         if keys[K_UP]:
-            player_body.apply_impulse_at_local_point(Vec2d(1000, 0).rotated(-2 * player_body.angle))
+            # Provide forward force in direction the player is pointing
+            player_body.apply_impulse_at_local_point(Vec2d(400, 0).rotated(-2 * player_body.angle))
         if keys[K_LEFT]:
+            # Rotate the player
             player_body.angle = player_body.angle - (math.pi/60)
             print(player_body.angle)
         if keys[K_RIGHT]:
@@ -295,7 +312,7 @@ def main():
             print(player_body.angle)
 
         # Move the camera body and center the camera on it
-        camera_body.velocity = player_body.velocity * .6 + (player_body.position - camera_body.position) * 3
+        camera_body.velocity = player_body.velocity * .8 + (player_body.position - camera_body.position) * 2
         center_camera_on(camera_body)
 
         # Check for stars going outside
@@ -313,6 +330,7 @@ def main():
         dt = 1. / FPS
         space.step(dt)
 
+        # Update display
         pygame.display.update()
         FPS_CLOCK.tick(FPS)
 
