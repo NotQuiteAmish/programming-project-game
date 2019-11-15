@@ -40,8 +40,32 @@ refers to their position in WORLD COORDINATES
     - camera_center - (Include?) (x,y) coordinate of the center of the camera
     - camera_width, camera_height - Dimensions of the area seen by the camera. Should usually be the size of the 
       window (WIN_WIDTH, WIN_HEIGHT), although this may be possible to change if you want to "zoom out"
+    - WIN_WIDTH, WIN_HEIGHT - Width and height of the game window
+    - ACTIVE_ZONE_WIDTH - The width of the "active zone" around the window:
+    
+     ________________________________________________________________________
+    |                                                                        |
+    |                                                                        |
+    |                          pymunk space                                  |
+    |                                                                        |
+    |                ____________________________                            |
+    |               |      active zone           |                           |
+    |               |    +__________________     |                           |
+    |               |    |                  |    |                           |
+    |               |    |     pygame       |    |                           |   ("+" represents the location of 
+    |               |    |     camera       |    |                           |    (camera_x, camera_y))
+    |               |    |                  |    |                           |
+    |               |     ------------------     |                           |
+    |               |____________________________|                           |
+    |                                                                        |
+    |                                                                        |
+    |                                                                        |
+     ------------------------------------------------------------------------
       
 
+ Camera System
+ 
+ The camera is a 700x700 window that shows the objects within that view. 
  
  
 '''
@@ -79,8 +103,8 @@ def draw_circle_shapes(shapes: [pymunk.Shape]):
     """Draws circular pymunk bodies so they appear in the correct location"""
     for shape in shapes:
         shape.pg_center = pygame_coordinates(*shape.body.position)
-        pygame.draw.circle(DISPLAYSURF, shape.color, shape.pg_center, int(shape.radius))
-        pygame.draw.line(DISPLAYSURF, color.THECOLORS['black'],
+        pygame.draw.circle(DISPLAY_SURF, shape.color, shape.pg_center, int(shape.radius))
+        pygame.draw.line(DISPLAY_SURF, color.THECOLORS['black'],
                          shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle))
 
 
@@ -169,7 +193,7 @@ class Planet:
         # Coordinates must be converted to integers for pygame to draw them
         self.pg_x = int(self.pg_x)
         self.pg_y = int(self.pg_y)
-        pygame.draw.circle(DISPLAYSURF, self.color, (self.pg_x, self.pg_y), self.radius)
+        pygame.draw.circle(DISPLAY_SURF, self.color, (self.pg_x, self.pg_y), self.radius)
 
 
 class Star:
@@ -200,7 +224,7 @@ class Star:
 
     def draw(self):
         self.update_pg_coords()
-        pygame.draw.circle(DISPLAYSURF, self.color, self.pg_location, self.size)
+        pygame.draw.circle(DISPLAY_SURF, self.color, self.pg_location, self.size)
 
     # The pg_XXXX
     def update_pg_coords(self):
@@ -214,16 +238,16 @@ class Star:
 
 # The Game itself #################################################################################################
 def main():
-    global DISPLAYSURF, FPSCLOCK, camera_x, camera_y
+    global DISPLAY_SURF, FPS_CLOCK, camera_x, camera_y
 
     # Start up pygame settings
     pygame.init()
-    FPSCLOCK = pygame.time.Clock()
-    DISPLAYSURF = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+    FPS_CLOCK = pygame.time.Clock()
+    DISPLAY_SURF = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
     # Set up pymunk physics
     space = pymunk.Space()
-    draw_options = pygame_util.DrawOptions(DISPLAYSURF)
+    draw_options = pygame_util.DrawOptions(DISPLAY_SURF)
     circle_shapes = []
 
     # Create player body
@@ -249,7 +273,7 @@ def main():
     for i in range(100):
         planets.append(Planet(radius=400 - 4 * i))
 
-    for i in range(400):
+    for i in range(1000):
         Star(color=random.choice(list(color.THECOLORS.values())))
 
     while True:
@@ -279,7 +303,7 @@ def main():
             star.update_pg_coords()
 
         # Draw stuff
-        DISPLAYSURF.fill(color.Color(7, 0, 15, 255))
+        DISPLAY_SURF.fill(color.Color(7, 0, 15, 255))
         draw_objects(Star._stars)
         # draw_objects(planets)
         # space.debug_draw(draw_options)
@@ -290,7 +314,7 @@ def main():
         space.step(dt)
 
         pygame.display.update()
-        FPSCLOCK.tick(FPS)
+        FPS_CLOCK.tick(FPS)
 
 
 if __name__ == '__main__':
