@@ -2,6 +2,7 @@
 # Caleb Hostetler
 # 11/11/2019
 
+
 import sys
 
 import pygame
@@ -74,6 +75,7 @@ WIN_WIDTH = 700
 WIN_HEIGHT = 700
 ACTIVE_ZONE_WIDTH = WIN_WIDTH/2
 FPS = 60
+SPACE = pymunk.Space()
 
 camera_x, camera_y = 0, WIN_HEIGHT
 
@@ -182,14 +184,15 @@ class Planet:
     def __init__(self, radius=100, mass=1000, location=None, object_color=None):
         self.radius = radius
         self.mass = mass
-        if location is None:
-            location = random_position_in_active_zone()
-        self.x_pos, self.y_pos = location
+        self.location = location
+        if self.location is None:
+            self.location = random_position_in_active_zone()
+        self.x_pos, self.y_pos = self.location
         self.width, self.height = (self.radius * 2, self.radius * 2)
 
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.radius), (self.y_pos + self.radius))
 
-        self.pg_x, self.pg_y = pygame_coordinates(self.x_pos, self.y_pos)
+
         self.color = object_color
         if self.color is None:
             self.color = random.choice(list(pygame.color.THECOLORS.values()))
@@ -198,11 +201,14 @@ class Planet:
         return 'radius: ' + str(self.radius)
 
     def draw(self):
-        self.pg_x, self.pg_y = pygame_coordinates(self.x_pos, self.y_pos)
-        # Coordinates must be converted to integers for pygame to draw them
-        self.pg_x = int(self.pg_x)
-        self.pg_y = int(self.pg_y)
+        # Update the coordinates, then draw
+        self.update_pg_coords()
         pygame.draw.circle(DISPLAY_SURF, self.color, (self.pg_x, self.pg_y), self.radius)
+
+    def update_pg_coords(self):
+        self.pg_location = pygame_coordinates(*self.location)
+        self.pg_x, self.pg_y = pygame_coordinates(self.x_pos, self.y_pos)
+        self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.radius), (self.y_pos + self.radius))
 
 
 class Star:
@@ -215,10 +221,13 @@ class Star:
     DOT = 0
     CROSS = 1
 
-    def __init__(self, location=None, size=0, type=DOT, color=color.THECOLORS['white']):
+    def __init__(self, location=None, size=0, type=DOT, color=color.THECOLORS['white'], on_screen=False):
         self.location = location
         if self.location is None:
-            self.location = random_position_out_of_view()
+            if not on_screen:
+                self.location = random_position_out_of_view()
+            else:
+                self.location = random_position_in_active_zone()
 
         self.x_pos, self.y_pos = self.location
         self.size = int(size)
@@ -259,7 +268,6 @@ def main():
     DISPLAY_SURF = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
     # Set up pymunk physics
-    space = pymunk.Space()
     draw_options = pygame_util.DrawOptions(DISPLAY_SURF)
     circle_shapes = []
 
@@ -276,20 +284,20 @@ def main():
     camera_body = pymunk.Body(mass=.00000001, moment=pymunk.moment_for_circle(1, 0, 3))
 
     # Add bodies to space
-    space.add(player_shape)
-    space.add(player_body)
-    space.add(camera_body)
+    SPACE.add(player_shape)
+    SPACE.add(player_body)
+    SPACE.add(camera_body)
     player_body.position = (0, 0)
     camera_body.position = (0, 0)
 
     planets = []
     for i in range(100):
-        planets.append(Planet(radius=400 - 4 * i))
+        planets.append(Planet(radius=100 - 1 * i))
 
     # Generate 1000 stars. These will be automatically added to the Star._stars list, and will replace themselves with
     # new stars if they exit the active zone
     for i in range(1000):
-        Star(color=random.choice(list(color.THECOLORS.values())), size=0)
+        Star(color=random.choice(list(color.THECOLORS.values())), size=0, on_screen=True)
 
     while True:
 
@@ -297,6 +305,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    terminate()
 
         # React to held keys
         keys = pygame.key.get_pressed()
@@ -306,10 +318,10 @@ def main():
         if keys[K_LEFT]:
             # Rotate the player
             player_body.angle = player_body.angle - (math.pi/60)
-            print(player_body.angle)
+            # print(player_body.angle)
         if keys[K_RIGHT]:
             player_body.angle = player_body.angle + (math.pi/60)
-            print(player_body.angle)
+            # print(player_body.angle)
 
         # Move the camera body and center the camera on it
         camera_body.velocity = player_body.velocity * .8 + (player_body.position - camera_body.position) * 2
@@ -322,13 +334,13 @@ def main():
         # Draw stuff
         DISPLAY_SURF.fill(color.Color(7, 0, 15, 255))
         draw_objects(Star._stars)
-        # draw_objects(planets)
+        draw_objects(planets)
         # space.debug_draw(draw_options)
         draw_circle_shapes(circle_shapes)
 
         # Physics tick
         dt = 1. / FPS
-        space.step(dt)
+        SPACE.step(dt)
 
         # Update display
         pygame.display.update()
