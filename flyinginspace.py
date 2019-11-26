@@ -77,6 +77,8 @@ ACTIVE_ZONE_WIDTH = WIN_WIDTH/2
 FPS = 60
 SPACE = pymunk.Space()
 
+PLANET = 0
+
 camera_x, camera_y = 0, WIN_HEIGHT
 
 
@@ -181,21 +183,30 @@ class Planet:
 
     pg_XXX variables are the planet's position in pygame coordinates
     """
-    def __init__(self, radius=100, mass=1000, location=None, object_color=None):
+    def __init__(self, radius=100, mass=1000, location=None, object_color=None, body:pymunk.Body=None, shape:pymunk.Shape=None):
         self.radius = radius
         self.mass = mass
+
         self.location = location
         if self.location is None:
             self.location = random_position_in_active_zone()
         self.x_pos, self.y_pos = self.location
+
         self.width, self.height = (self.radius * 2, self.radius * 2)
-
-        self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.radius), (self.y_pos + self.radius))
-
 
         self.color = object_color
         if self.color is None:
             self.color = random.choice(list(pygame.color.THECOLORS.values()))
+
+        self.body = body
+        self.shape = shape
+        if self.body is None or self.shape is None:
+            self.body, self.shape = Planet.create_planet(SPACE, self.radius, self.mass, self.location, self.color)
+
+        SPACE.add(self.body)
+        SPACE.add(self.shape)
+
+        self.update_pg_coords()
 
     def __str__(self):
         return 'radius: ' + str(self.radius)
@@ -203,12 +214,29 @@ class Planet:
     def draw(self):
         # Update the coordinates, then draw
         self.update_pg_coords()
-        pygame.draw.circle(DISPLAY_SURF, self.color, (self.pg_x, self.pg_y), self.radius)
+        pygame.draw.circle(DISPLAY_SURF, self.color, self.pg_location, self.radius)
 
     def update_pg_coords(self):
+        self.location = self.body.position
         self.pg_location = pygame_coordinates(*self.location)
         self.pg_x, self.pg_y = pygame_coordinates(self.x_pos, self.y_pos)
         self.pg_left, self.pg_top = pygame_coordinates((self.x_pos - self.radius), (self.y_pos + self.radius))
+
+    def create_planet(space: pymunk.Space, radius_in, mass_in, position, color=None):
+        """Function for creating a "planet". it takes several arguments, and colors it a random shade of green.
+        Returns a body and a shape for the planet"""
+        planet_body = pymunk.Body(mass_in, moment=pymunk.moment_for_circle(mass_in, 0, radius_in))
+        planet_shape = pymunk.Circle(planet_body, radius_in)
+        planet_body.position = position
+        planet_shape.friction = 0.5
+        planet_shape.elasticity = .7
+        planet_shape.collision_type = PLANET
+
+        if color is None:
+            planet_shape.color = (0, random.randint(50, 255), 0, 255)
+        else:
+            planet_shape.color = color
+        return planet_body, planet_shape
 
 
 class Star:
@@ -317,11 +345,14 @@ def main():
             player_body.apply_impulse_at_local_point(Vec2d(400, 0).rotated(-2 * player_body.angle))
         if keys[K_LEFT]:
             # Rotate the player
-            player_body.angle = player_body.angle - (math.pi/60)
+            player_body.apply_impulse_at_local_point(Vec2d(0, -30), (player_shape.radius, 0))
             # print(player_body.angle)
-        if keys[K_RIGHT]:
-            player_body.angle = player_body.angle + (math.pi/60)
+        elif keys[K_RIGHT]:
+            player_body.apply_impulse_at_local_point(Vec2d(0, 30), (player_shape.radius, 0))
             # print(player_body.angle)
+        else:
+            if player_body.angular_velocity < 0:
+                player_body.apply_impulse_at_local_point(Vec2d(0, player_body.angular_velocity/10), (player_shape.radius, 0))
 
         # Move the camera body and center the camera on it
         camera_body.velocity = player_body.velocity * .8 + (player_body.position - camera_body.position) * 2
@@ -335,7 +366,7 @@ def main():
         DISPLAY_SURF.fill(color.Color(7, 0, 15, 255))
         draw_objects(Star._stars)
         draw_objects(planets)
-        # space.debug_draw(draw_options)
+        # SPACE.debug_draw(draw_options)
         draw_circle_shapes(circle_shapes)
 
         # Physics tick
