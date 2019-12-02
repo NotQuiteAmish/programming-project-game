@@ -72,7 +72,7 @@ refers to their position in WORLD COORDINATES
 '''
 
 WIN_WIDTH = 700
-WIN_HEIGHT = 700
+WIN_HEIGHT = 600
 ACTIVE_ZONE_WIDTH = WIN_WIDTH/2
 FPS = 60
 SPACE = pymunk.Space()
@@ -80,6 +80,8 @@ SPACE = pymunk.Space()
 PLANET = 0
 
 camera_x, camera_y = 0, WIN_HEIGHT
+
+DISPLAY_SURF: pygame.Surface = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
 
 def world_coordinates(pygame_x, pygame_y):
@@ -172,6 +174,22 @@ def center_camera_on(focus_object: pymunk.Body):
     camera_x = int(camera_center_x - WIN_WIDTH/2)
     camera_y = int(camera_center_y + WIN_HEIGHT/2)
     return camera_x, camera_y
+
+def draw_gauge(level, x_pos, max=100, gauge_color = color.THECOLORS['red']):
+    percentage = int(level / max * 100)
+    full_rect = Rect(x_pos, WIN_HEIGHT - (100)       , 20, 100)
+    gauge_rect = Rect(x_pos, WIN_HEIGHT - (percentage), 20, percentage)
+    pygame.draw.rect(DISPLAY_SURF, gauge_color, gauge_rect)
+    pygame.draw.rect(DISPLAY_SURF, color.THECOLORS['gray'], full_rect, 2)
+
+def draw_fuel(fuel_level):
+    """This function draws a fuel gauge. fuel_level is a number between 0 and 100"""
+    draw_gauge(fuel_level, 10, 100, color.THECOLORS['orange'])
+
+
+def draw_health(health_level):
+    """This function draws a red fuel gauge. health_level is a number between 0 and 100"""
+    draw_gauge(health_level, 35, 100, color.THECOLORS['red'])
 
 
 class Planet:
@@ -293,7 +311,6 @@ def main():
     # Start up pygame settings
     pygame.init()
     FPS_CLOCK = pygame.time.Clock()
-    DISPLAY_SURF = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
     # Set up pymunk physics
     draw_options = pygame_util.DrawOptions(DISPLAY_SURF)
@@ -320,13 +337,32 @@ def main():
 
     planets = []
     for i in range(100):
-        planets.append(Planet(radius=100 - 1 * i))
+        pass
+        # planets.append(Planet(radius=100 - 1 * i))
 
     # Generate 1000 stars. These will be automatically added to the Star._stars list, and will replace themselves with
     # new stars if they exit the active zone
     for i in range(1000):
         Star(color=random.choice(list(color.THECOLORS.values())), size=0, on_screen=True)
 
+    # ------------------------------------- Sound --------------------------------------------------------
+    # Play Music
+    pygame.mixer.music.load('resources/punch-deck-feel-the-pulse.mp3')
+    pygame.mixer.music.play(-1, 10.0)
+
+    # Load sound effects
+    rocket_boost_sound = pygame.mixer.Sound('resources/rocket_boost.ogg')
+
+    # Create sound channels
+    rocket_boost_channel: pygame.mixer.Channel = pygame.mixer.Channel(0)
+    rocket_boost_channel.play(rocket_boost_sound, -1)                      # Play a sound but pause it, to be unpaused
+    rocket_boost_channel.pause()                                           # When the rocket is boosting
+
+    # Initialize player values for fuel, health, etc.
+    rocket_fuel = 100
+    boosting = False
+
+    # ------------------------------------ Game Loop ---------------------------------------------------
     while True:
 
         # Deal with events
@@ -343,16 +379,22 @@ def main():
         if keys[K_UP]:
             # Provide forward force in direction the player is pointing
             player_body.apply_impulse_at_local_point(Vec2d(400, 0).rotated(-2 * player_body.angle))
+            rocket_fuel -= .2
+            rocket_boost_channel.unpause()
+        else:
+            rocket_boost_channel.pause()
+
         if keys[K_LEFT]:
             # Rotate the player
-            player_body.apply_impulse_at_local_point(Vec2d(0, -30), (player_shape.radius, 0))
-            # print(player_body.angle)
+            player_body.angle -= .1
         elif keys[K_RIGHT]:
-            player_body.apply_impulse_at_local_point(Vec2d(0, 30), (player_shape.radius, 0))
-            # print(player_body.angle)
+            player_body.angle += .1
         else:
-            if player_body.angular_velocity < 0:
-                player_body.apply_impulse_at_local_point(Vec2d(0, player_body.angular_velocity/10), (player_shape.radius, 0))
+            if player_body.angular_velocity != 0:
+                player_body.angular_velocity = 0
+
+        # Play ongoing sounds
+
 
         # Move the camera body and center the camera on it
         camera_body.velocity = player_body.velocity * .8 + (player_body.position - camera_body.position) * 2
@@ -368,6 +410,8 @@ def main():
         draw_objects(planets)
         # SPACE.debug_draw(draw_options)
         draw_circle_shapes(circle_shapes)
+        draw_fuel(rocket_fuel)
+        draw_health(100)
 
         # Physics tick
         dt = 1. / FPS
