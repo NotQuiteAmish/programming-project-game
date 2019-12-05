@@ -132,14 +132,14 @@ def draw_pymunk_circles(shapes: [pymunk.Shape]):
         # This line points what direction the shape's body is facing. It's kinda janky, not sure why it works
         # the way it does.
         pygame.draw.line(DISPLAY_SURF, color.THECOLORS['black'],
-                         shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle))
+                         shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle), 2)
 
 
 def draw_lasers(lasers: [pymunk.Shape]):
     for laser in lasers:
         laser.tip_coords = pygame_coordinates(*laser.body.position)
         laser.back_coords = pygame_coordinates(*(Vec2d(20,0).rotated(laser.body.angle) + laser.body.position))
-        pygame.draw.line(DISPLAY_SURF, laser.color, laser.tip_coords, laser.back_coords, 2)
+        pygame.draw.line(DISPLAY_SURF, laser.color, laser.tip_coords, laser.back_coords, 3)
 
 def terminate():
     """Ends the program"""
@@ -262,7 +262,7 @@ def laser_planet_collision(arbiter, space, data):
     space.remove(laser_shape, laser_shape.body)
     space.remove(planet_shape, planet_shape.body)
 
-    score += planet_shape.body.mass
+    score += planet_shape.radius
     print(score)
 
     random_sound_path = 'resources/explosions/explosion' + str(random.randint(1, 5)) + '.ogg'
@@ -340,6 +340,7 @@ class Planet:
         planet_body = pymunk.Body(mass_in, moment=pymunk.moment_for_circle(mass_in, 0, radius_in))
         planet_shape = pymunk.Circle(planet_body, radius_in)
         planet_body.position = position
+        planet_body.velocity = Vec2d(random.randint(0, 20), 0).rotated(random.random() * 6.2)
         planet_shape.friction = 0.5
         planet_shape.elasticity = .7
         planet_shape.collision_type = PLANET
@@ -405,6 +406,7 @@ def main():
     # Start up pygame settings
     pygame.mixer.pre_init(44100, -16, 1, 512)
     pygame.init()
+    pygame.display.set_caption('Space Game')
     FPS_CLOCK = pygame.time.Clock()
 
     # Set up pymunk physics
@@ -413,7 +415,7 @@ def main():
 
     # Create player body (space ship thing)
     player_body = pymunk.Body(mass=100, moment=pymunk.moment_for_circle(100, 0, 10))
-    player_shape = pymunk.Circle(player_body, 10)
+    player_shape = pymunk.Circle(player_body, 15)
     player_shape.friction = 0.5
     player_shape.elasticity = 0.9
     player_shape.color = color.THECOLORS['coral']
@@ -530,6 +532,17 @@ def main():
             button_text_rect.center = start_button_rect.center
             DISPLAY_SURF.blit(button_text, button_text_rect)
 
+            instructions_one_text = button_font.render('Fly with arrow keys, fire with spacebar.', True, color.THECOLORS['orange'])
+            instructions_one_rect = instructions_one_text.get_rect()
+            instructions_one_rect.center = (WIN_WIDTH/2, WIN_HEIGHT * 1/2)
+            DISPLAY_SURF.blit(instructions_one_text, instructions_one_rect)
+
+            instructions_two_text = button_font.render("Don't crash, and don't let fuel, time, or ammo run out!", True,
+                                                       color.THECOLORS['orange'])
+            instructions_two_rect = instructions_two_text.get_rect()
+            instructions_two_rect.center = (WIN_WIDTH / 2, WIN_HEIGHT * 1/2 + 35)
+            DISPLAY_SURF.blit(instructions_two_text, instructions_two_rect)
+
             # Draw the title text
             title_text = title_font.render('Space Game', True, color.THECOLORS['white'])
             title_text_rect = title_text.get_rect()
@@ -547,7 +560,7 @@ def main():
                 # Provide forward force in direction the player is pointing
                 if rocket_fuel > 0:
                     player_body.apply_impulse_at_local_point(Vec2d(800, 0).rotated(-2 * player_body.angle))
-                    rocket_fuel -= .6
+                    rocket_fuel -= .25
 
             if keys[K_LEFT]:
                 player_body.angle -= .13
@@ -608,6 +621,12 @@ def main():
             draw_health(player_health)
             draw_ammo(ammunition)
 
+
+            # Draw timer/score box
+            box_rectangle = Rect(0, 0, 200, 60)
+            box_rectangle.center = (WIN_WIDTH/2, WIN_HEIGHT/10)
+            pygame.draw.rect(DISPLAY_SURF, color.THECOLORS['black'], box_rectangle)
+            pygame.draw.rect(DISPLAY_SURF, color.THECOLORS['white'], box_rectangle, 2)
             # Draw timer
             timer_text = button_font.render(str(time_remaining), True, color.THECOLORS['white'])
             timer_text_rect = timer_text.get_rect()
@@ -615,9 +634,9 @@ def main():
             DISPLAY_SURF.blit(timer_text, timer_text_rect)
 
             # Draw score
-            score_text = button_font.render(str(score)[:-2], True, color.THECOLORS['gray'])
+            score_text = button_font.render(str(score), True, color.THECOLORS['gray'])
             score_text_rect = score_text.get_rect()
-            score_text_rect.center = (WIN_WIDTH/2, WIN_HEIGHT/9)
+            score_text_rect.center = (WIN_WIDTH/2, WIN_HEIGHT/12 + 25)
             DISPLAY_SURF.blit(score_text, score_text_rect)
 
             # Physics tick

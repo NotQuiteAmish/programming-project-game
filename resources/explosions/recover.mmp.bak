@@ -7,7 +7,7 @@
       <track x="828" muted="0" type="0" tab="0" visible="1" minimized="0" maximized="0" height="467" width="262" name="sfxr" solo="0" y="8">
         <instrumenttrack pitch="0" usemasterpitch="1" pitchrange="1" fxch="0" pan="0" basenote="57" vol="100">
           <instrument name="sfxr">
-            <sfxr changeSpeed="0.806" startFreq="0.535" hpFilCutSweep="0.0139312" phaserOffset="0.0442117" sus="0.0314566" lpFilCutSweep="0.308368" repeatSpeed="0" waveForm="0" dec="0" dSlide="0.127719" sqrSweep="-3.03713e-05" version="1" att="0.665796" vibSpeed="0" slide="-0.049" lpFilCut="0.0759896" lpFilReso="0" hold="0.0469156" changeAmt="-1" vibDepth="0.596948" hpFilCut="0.0558645" sqrDuty="0" minFreq="0" phaserSweep="-0.302652"/>
+            <sfxr changeSpeed="0.3292" startFreq="0.499904" hpFilCutSweep="0.00708563" phaserOffset="0.739254" sus="0.028063" lpFilCutSweep="0.0250509" repeatSpeed="0" waveForm="0" dec="0.708" dSlide="-0.0497548" sqrSweep="-0.0648679" version="1" att="0" vibSpeed="0" slide="-0.0917612" lpFilCut="0.932531" lpFilReso="0" hold="0.353213" changeAmt="-0.1414" vibDepth="0.348914" hpFilCut="0.00243811" sqrDuty="0" minFreq="0" phaserSweep="-0.0327066"/>
           </instrument>
           <eldata fres="0.5" fwet="0" fcut="14000" ftype="0">
             <elvol rel="0.1" ctlenvamt="0" lspd="0.1" lspd_denominator="4" userwavefile="" dec="0.5" lshp="0" x100="0" att="0" pdel="0" lamt="0" amt="0" hold="0.5" sustain="0.5" lspd_numerator="4" lpdel="0" lspd_syncmode="0" latt="0"/>
