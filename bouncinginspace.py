@@ -131,6 +131,7 @@ def main():
     pygame.mixer.music.play(-1, 0.0)
 
     ball_body.position = (300, 400)
+
     # Main game loop ----------------------------------------------------------------------------------------
     while running:
         # Event handling
