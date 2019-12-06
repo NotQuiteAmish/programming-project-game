@@ -44,8 +44,8 @@ Thursday, 11/14. All of the code is original except for small bare bones bits I 
 - Project 3 - December 6, 2019 -
 Here it is, the final project!
 
-Before I go into this, all of the interesting stuff is in flyinginspace.py. The rest of the files are either old or
-failed attempts at adding levels and multiplayer functionailty.
+Before I go into this, all of the interesting stuff is in flyinginspace.py and resources. The rest of the files are
+old.
 
 Since the last project, I added planets! These are more like asteroids, really, but they are called planets in the code.
 These will damage the player if they fly into them too fast. I also added functionality for the laser gun. When the

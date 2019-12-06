@@ -71,6 +71,8 @@ refers to their position in WORLD COORDINATES
  
 '''
 
+fun_mode = False
+
 WIN_WIDTH = 700
 WIN_HEIGHT = 600
 ACTIVE_ZONE_WIDTH = WIN_WIDTH
@@ -87,8 +89,8 @@ camera_x, camera_y = 0, WIN_HEIGHT
 DISPLAY_SURF: pygame.Surface = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
 # Game modes
-MENU =      0
-PLAY =      1
+MENU = 0
+PLAY = 1
 GAME_OVER = 2
 
 crash_sound = pygame.mixer.Sound
@@ -102,6 +104,7 @@ score = 0
 
 global player_health
 player_health = 100
+
 
 def world_coordinates(pygame_x, pygame_y):
     """Converts pygame coordinates and returns world coordinates"""
@@ -135,11 +138,12 @@ def draw_pymunk_circles(shapes: [pymunk.Shape]):
                          shape.pg_center, shape.pg_center + Vec2d(shape.radius, 0).rotated(shape.body.angle), 2)
 
 
-def draw_lasers(lasers: [pymunk.Shape]):
-    for laser in lasers:
+def draw_lasers(laser_list: [pymunk.Shape]):
+    for laser in laser_list:
         laser.tip_coords = pygame_coordinates(*laser.body.position)
-        laser.back_coords = pygame_coordinates(*(Vec2d(20,0).rotated(laser.body.angle) + laser.body.position))
+        laser.back_coords = pygame_coordinates(*(Vec2d(20, 0).rotated(laser.body.angle) + laser.body.position))
         pygame.draw.line(DISPLAY_SURF, laser.color, laser.tip_coords, laser.back_coords, 3)
+
 
 def terminate():
     """Ends the program"""
@@ -147,19 +151,19 @@ def terminate():
     sys.exit()
 
 
-def is_in_active_zone(object):
+def is_in_active_zone(subject):
     """Returns True if object is at least partially within the active zone, False if entirely outside"""
-    object_rect = pygame.rect.Rect(object.pg_left, object.pg_top, object.width, object.height)
+    object_rect = pygame.rect.Rect(subject.pg_left, subject.pg_top, subject.width, subject.height)
     active_rect = pygame.rect.Rect(0 - ACTIVE_ZONE_WIDTH,             0 - ACTIVE_ZONE_WIDTH,
                                    WIN_WIDTH + 2 * ACTIVE_ZONE_WIDTH, WIN_HEIGHT + 2 * ACTIVE_ZONE_WIDTH)
     return active_rect.colliderect(object_rect)
 
 
-def is_in_camera_zone(object=None, coords=None):
+def is_in_camera_zone(subject=None, coords=None):
     """Returns True if object is at least partially within the camera zone, False if entirely outside"""
     camera_rect = pygame.rect.Rect(0, 0, WIN_WIDTH, WIN_HEIGHT)
-    if object is not None:
-        object_rect = pygame.rect.Rect(object.pg_left, object.pg_top, object.width, object.height)
+    if subject is not None:
+        object_rect = pygame.rect.Rect(subject.pg_left, subject.pg_top, subject.width, subject.height)
         return camera_rect.colliderect(object_rect)
     if coords is not None:
         return camera_rect.collidepoint(pygame_coordinates(*coords))
@@ -177,6 +181,7 @@ def random_position_out_of_view():
     """Returns a random (x, y) position that is within the active zone, but not in view of the camera"""
     # Keeps generating random points until it finds one not in the active zone
     inside_camera_view = True
+    x_pos, y_pos = 0, 0
     while inside_camera_view:
         x_pos, y_pos = random_position_in_active_zone()
         inside_camera_view = is_in_camera_zone(coords=(x_pos, y_pos))
@@ -200,6 +205,7 @@ def center_camera_on(focus_object: pymunk.Body):
     camera_y = int(camera_center_y + WIN_HEIGHT/2)
     return camera_x, camera_y
 
+
 def draw_gauge(level, x_pos, max=100, gauge_color = color.THECOLORS['red']):
     percentage = int(level / max * 100)
     full_rect = Rect(x_pos, WIN_HEIGHT - (100)       , 20, 100)
@@ -217,8 +223,10 @@ def draw_health(health_level):
     """This function draws a red fuel gauge. health_level is a number between 0 and 100"""
     draw_gauge(health_level, 35, 100, color.THECOLORS['red'])
 
+
 def draw_ammo(ammunition):
     draw_gauge(ammunition, 60, 100, color.THECOLORS['green'])
+
 
 def create_player_ammunition(player: pymunk.Shape, ammunition_color=color.THECOLORS['green']):
     """Function that creates a new ammunition blast using the angle and position of the shape creating it (player)
@@ -285,7 +293,8 @@ class Planet:
 
     pg_XXX variables are the planet's position in pygame coordinates
     """
-    def __init__(self, radius=100, mass=1000, location=None, object_color=None, body:pymunk.Body=None, shape:pymunk.Shape=None):
+    def __init__(self, radius=100, mass=1000, location=None, object_color=None,
+                 body: pymunk.Body = None, shape: pymunk.Shape = None):
         self.radius = radius
         self.mass = mass
 
@@ -304,7 +313,6 @@ class Planet:
         self.shape = shape
         if self.body is None or self.shape is None:
             self.body, self.shape = Planet.create_planet(SPACE, self.radius, self.mass, self.location, self.color)
-
 
         self.shape.object = self
         SPACE.add(self.body)
@@ -458,7 +466,10 @@ def main():
     # Load sound effects
     crash_sound = pygame.mixer.Sound('resources/click.ogg')
     rocket_boost_sound = pygame.mixer.Sound('resources/rocket_boost.ogg')
-    laser_sound = pygame.mixer.Sound('resources/laser.ogg')
+    if not fun_mode:
+        laser_sound = pygame.mixer.Sound('resources/laser.ogg')
+    else:
+        laser_sound = pygame.mixer.Sound('resources/fun_laser.ogg')
 
     # Create sound channels
     rocket_boost_channel: pygame.mixer.Channel = pygame.mixer.Channel(0)
