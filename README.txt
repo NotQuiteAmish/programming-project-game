@@ -41,4 +41,19 @@ In all, I think I spent about 7 hours on this project between my last presentati
 Thursday, 11/14. All of the code is original except for small bare bones bits I used from bouncinginspace.py. I did a
 *lot* of documentation so hopefully its commented well enough
 
+- Project 3 - December 6, 2019 -
+Here it is, the final project!
+
+Before I go into this, all of the interesting stuff is in flyinginspace.py. The rest of the files are either old or
+failed attempts at adding levels and multiplayer functionailty.
+
+Since the last project, I added planets! These are more like asteroids, really, but they are called planets in the code.
+These will damage the player if they fly into them too fast. I also added functionality for the laser gun. When the
+player presses spacebar, they fire a laser that can destroy planets. This gives the player points.
+
+There is also game functionality, such as a menu, timer, score, gauges, and game-over conditions. This was tons of fun
+to create, and I especially had fun creating all of the sound effects (except the music, that was royalty free). As a
+result I spent 15 hours or so on this project, just having fun with it. If I had more time, I would have loved to make a
+multiplayer game over the network, but I just did not have enough time to make that commitment.
+
 
