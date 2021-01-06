@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE lmms-project>
+<lmms-project version="1.0" creatorversion="1.2.0" type="instrumenttracksettings" creator="LMMS">
+  <head/>
+  <instrumenttracksettings name="SGM-v2" muted="0" type="0" solo="0">
+    <instrumenttrack vol="100" fxch="0" pitch="0" basenote="57" usemasterpitch="1" pan="0" pitchrange="1">
+      <instrument name="sf2player">
+        <sf2player reverbRoomSize="0.2" reverbWidth="0.5" reverbDamping="0" src="C:/Users/caleb/Downloads/SGM-v2.01-NicePianosGuitarsBass-V1.2.sf2" patch="0" reverbLevel="0.9" chorusOn="0" chorusNum="3" chorusSpeed="0.3" reverbOn="0" bank="0" chorusDepth="8" chorusLevel="2" gain="1"/>
+      </instrument>
+      <eldata ftype="0" fwet="0" fcut="14000" fres="0.5">
+        <elvol amt="0" lpdel="0" sustain="0.5" rel="0.1" pdel="0" lspd_numerator="4" x100="0" lshp="0" att="0" lspd_syncmode="0" ctlenvamt="0" lspd="0.1" dec="0.5" hold="0.5" userwavefile="" latt="0" lspd_denominator="4" lamt="0"/>
+        <elcut amt="0" lpdel="0" sustain="0.5" rel="0.1" pdel="0" lspd_numerator="4" x100="0" lshp="0" att="0" lspd_syncmode="0" ctlenvamt="0" lspd="0.1" dec="0.5" hold="0.5" userwavefile="" latt="0" lspd_denominator="4" lamt="0"/>
+        <elres amt="0" lpdel="0" sustain="0.5" rel="0.1" pdel="0" lspd_numerator="4" x100="0" lshp="0" att="0" lspd_syncmode="0" ctlenvamt="0" lspd="0.1" dec="0.5" hold="0.5" userwavefile="" latt="0" lspd_denominator="4" lamt="0"/>
+      </eldata>
+      <chordcreator chord="0" chordrange="1" chord-enabled="0"/>
+      <arpeggiator arp="0" arpskip="0" arp-enabled="0" arptime="200" arptime_numerator="4" arprange="1" arptime_syncmode="0" arpmiss="0" arpgate="100" arpmode="0" arpdir="0" arpcycle="0" arptime_denominator="4"/>
+      <midiport outputprogram="1" inputchannel="0" fixedinputvelocity="-1" outputchannel="1" outputcontroller="0" fixedoutputnote="-1" basevelocity="63" fixedoutputvelocity="-1" inputcontroller="0" writable="0" readable="0"/>
+      <fxchain numofeffects="0" enabled="0"/>
+    </instrumenttrack>
+  </instrumenttracksettings>
+</lmms-project>
