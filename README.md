@@ -1,16 +1,39 @@
--------- Caleb's Python Project ----------
+# Caleb's Python Project
 
-- Project 1 - November 7, 2019 -
+This is a collection of projects made for CSS 155 A (Programming in Python) at Eastern Mennonite University. These projects were used to explore the pygame and pymunk libraries. Project included:
+
+- pymunkarrows.py - A copy of the sample program provided with the pymunk library
+- bouncinginspace.py - A program that simulates gravity and collisions between objects freely floating in space
+- flyinginspace.py - A full-featured game similar to Asteroids, which uses physics simulations from pymunk alongside the pygame engine
+
+# Screenshots
+- [flyinginspace.py](flyinginspace.py)
+
+![flyinginspace.py screenshot](flyinginspace-screenshot.png)
+
+# Installation
+- Clone repository
+    - `git clone https://github.com/NotQuiteAmish/programming-project-game.git`
+- Set up virtual environment
+    - `virtualenv venv`
+    - `source ./venv/bin/activate` or `venv/Scripts/activate.bat` on Windows
+    - `pip install -r requirements.txt` to install all required libraries
+- Run project
+    - `python flyinginspace.py`
+
+
+# Update History
+## Project 1 - November 7, 2019
 
 Hello there, welcome to my project! I'm not entirely sure what my endgoal with this project is, but currently I am
 working with the python library "pymunk". It is a physics engine that integrates well with pygame. It takes care of
 collisions between objects, and it will also calculate any movement that I cause using forces and impulses.
 
-The first project I made with this library is "bouncinginspace.py". It was made almost entirely from scratch, however
-some barebones code snippets were taken from the pymunk example program "pymunkarrows.py". I included this in the
+The first project I made with this library is [bouncinginspace](bouncinginspace.py). It was made almost entirely from scratch, however
+some barebones code snippets were taken from the pymunk example program [pymunkarrows](pymunkarrows.py). I included this in the
 repository as a citation of sorts, but none of it is my original code.
 
-bouncinginspace.py is a program that simulates several bodies floating in space. You can input force by clicking to send a
+[bouncinginspace](bouncinginspace.py) is a program that simulates several bodies floating in space. You can input force by clicking to send a
 ball crashing into the planets. However, there is also additionally an option to enable gravity. The gravity code was
 written entirely by me. Essentially, the code will loop through all of the objects on the screen and calculate the
 gravitational interaction between them, and apply forces accordingly. The gravity can be turned up or down using the
@@ -25,9 +48,9 @@ other peoples' machines)
 
 
 
-- Project 2 - November 14, 2019 -
+## Project 2 - November 14, 2019
 
-The new part of my project this week is "flyinginspace.py". I think my end goal for this project will be some game that
+The new part of my project this week is [flyinginspace](flyinginspace.py). I think my end goal for this project will be some game that
 takes place in space. So, I want to be able to move around freely in the space and have the camera track the player
 wherever they move.
 
@@ -38,13 +61,13 @@ The majority of the work on this program were the following things:
     - Further practice with git and GitHub.
 
 In all, I think I spent about 7 hours on this project between my last presentation on Monday, 11/11, and today,
-Thursday, 11/14. All of the code is original except for small bare bones bits I used from bouncinginspace.py. I did a
+Thursday, 11/14. All of the code is original except for small bare bones bits I used from [bouncinginspace](bouncinginspace.py). I did a
 *lot* of documentation so hopefully its commented well enough
 
-- Project 3 - December 6, 2019 -
+## Project 3 - December 6, 2019
 Here it is, the final project!
 
-Before I go into this, all of the interesting stuff is in flyinginspace.py and resources. The rest of the files are
+Before I go into this, all of the interesting stuff is in [flyinginspace](flyinginspace.py) and resources. The rest of the files are
 old.
 
 Since the last project, I added planets! These are more like asteroids, really, but they are called planets in the code.
